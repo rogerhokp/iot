@@ -3,7 +3,7 @@ let bodyParser = require('body-parser');
 let app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.post('/', function (req, res) {
+app.post('/temp', function (req, res) {
   console.log(req.body.temp);
   res.send('ok').end();
 });
