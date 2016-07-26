@@ -5,6 +5,11 @@
 
 
 #include <DHT.h>
+#define highLightPin 2
+#define normalLightPin 3
+#define lowLightPin 4
+#define switchPin 8
+#define switchNoti 9
 #define tempSensorPower 7
 #define tempSensorPin 6
 #define DHTTYPE DHT11
@@ -19,92 +24,151 @@ void setup() {
   analogReference(INTERNAL);
   referenceVoltage = 2.00; //Set to 5, 3.3, 2.56 or 1.1 depending on analogReference Setting
 
-
+  pinMode(switchPin, INPUT);
+  pinMode(switchNoti, OUTPUT);
   pinMode(tempSensorPin, INPUT);
   pinMode(tempSensorPower, OUTPUT);
+  pinMode(highLightPin, OUTPUT);
+  pinMode(normalLightPin, OUTPUT);
+  pinMode(lowLightPin, OUTPUT);
   digitalWrite(tempSensorPower, HIGH);
   dht.begin();
   sprintln("setup finished");
 }
 
+boolean sendOn = true;
+long count = 0L;
+long sendInterval = 60000L;
+int delayMs = 100;
 
 void loop() {
-  boolean has_request = false;
 
-  postToServer("/temp", "192.168.1.108:3000", "temp=1999");
-  delay(5000);
-  
-//  if (Serial.available()) {
-//
-//    sprintln("send to Server");
-//    
-//    sprintln("send to Server end");
-//    while (Serial.available()) {
-//      char c = Serial.read();
-//    }
-//    has_request = true;
-//  }
-//  if (false && has_request) {
-//    Serial.println("HTTP/1.1 200 OK");
-//    Serial.println("Content-Type: text/html");
-//    Serial.println("Connection: close");  // the connection will be closed after completion of the response
-//    Serial.println("Refresh: 5");  // refresh the page automatically every 5 sec
-//
-//    String sr = "<!DOCTYPE HTML>\n";
-//    sr += "<html>\n";
-//
-//    analogVal = 0;
-//    temp = getHeatIndexInC();
-//
-//
-//    sr += "<center>";
-//
-//    sr += "<h1 style=color:blue>";
-//    sr += temp;
-//
-//    sr += "</h1>";
-//
-//    sr += "</center>";
-//
-//    sr += "</html>";
-//    Serial.print("Content-Length: ");
-//    Serial.print(sr.length());
-//    Serial.print("\r\n\r\n");
-//    Serial.print(sr);
-//    has_request = false;
-//  }
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  float hi = dht.computeHeatIndex(t, h, false);
+
+  if (sendOn && count == sendInterval && Serial) {
+    postToServer(
+      "/temperature",
+      "iot-rogerhokp.rhcloud.com",
+      "{\"humidity\": " + String(h) + ", \"temperature\":" + String(t) + ", \"heat_index\":" + String(hi) + "}",
+      "application/json; charset=utf-8"
+    );
+  }
+  if (count == sendInterval) {
+    count = 0L;
+  }
+
+
+  if (digitalRead(switchPin) == HIGH) {
+    sendOn = !sendOn;
+    sprintln("switch");
+    delay(900);
+    count = 0L;
+  }
+
+  if (sendOn) {
+    digitalWrite(switchNoti, HIGH);
+  } else {
+    digitalWrite(switchNoti, LOW);
+  }
+
+  if (hi > 32 ) {
+    digitalWrite(highLightPin, HIGH);
+    digitalWrite(normalLightPin, LOW);
+    digitalWrite(lowLightPin, LOW);
+  } else if (hi > 25) {
+    digitalWrite(highLightPin, LOW);
+    digitalWrite(normalLightPin, HIGH);
+    digitalWrite(lowLightPin, LOW);
+  } else {
+    digitalWrite(highLightPin, LOW);
+    digitalWrite(normalLightPin, LOW);
+    digitalWrite(lowLightPin, HIGH);
+  }
+
+
+
+  count += delayMs;
+
+  delay(delayMs);
+
+  //  if (Serial.available()) {
+  //
+  //    sprintln("send to Server");
+  //
+  //    sprintln("send to Server end");
+  //    while (Serial.available()) {
+  //      char c = Serial.read();
+  //    }
+  //    has_request = true;
+  //  }
+  //  if (false && has_request) {
+  //    Serial.println("HTTP/1.1 200 OK");
+  //    Serial.println("Content-Type: text/html");
+  //    Serial.println("Connection: close");  // the connection will be closed after completion of the response
+  //    Serial.println("Refresh: 5");  // refresh the page automatically every 5 sec
+  //
+  //    String sr = "<!DOCTYPE HTML>\n";
+  //    sr += "<html>\n";
+  //
+  //    analogVal = 0;
+  //    temp = getHeatIndexInC();
+  //
+  //
+  //    sr += "<center>";
+  //
+  //    sr += "<h1 style=color:blue>";
+  //    sr += temp;
+  //
+  //    sr += "</h1>";
+  //
+  //    sr += "</center>";
+  //
+  //    sr += "</html>";
+  //    Serial.print("Content-Length: ");
+  //    Serial.print(sr.length());
+  //    Serial.print("\r\n\r\n");
+  //    Serial.print(sr);
+  //    has_request = false;
+  //  }
 
 }
 
 
-void postToServer(String path, String host, String data) {
+
+
+
+/////////////Helper function
+
+
+void postToServer(String path, String host, String data, String contentType) {
 
 
   /*
 
-    POST /temp HTTP/1.1
-    Host: 192.168.1.108:3000
+    POST /temperature HTTP/1.1
+    Host: iot-rogerhokp.rhcloud.com
+    Content-Type: application/json
     Cache-Control: no-cache
-    Postman-Token: 6df19a49-7a5b-3b0f-32fb-570f49ed5ce0
-    Content-Type: application/x-www-form-urlencoded
-    Connection: close
+    Postman-Token: 1aee22bb-cb4d-f45d-39ed-92f96402db34
 
-    temp=122
+    {"test": 222}
 
   */
   sprintln("POST " + path + " HTTP/1.1");
   sprintln("Host: " + host);
-  sprintln("Content-Type: application/x-www-form-urlencoded");
   sprintln("Connection: close");
+  sprintln("Content-Type: " + contentType);
+  sprint("Content-Length: ");
+  sprintln(String(data.length()));
   sprintln();
   sprintln(data);
-  Serial.print("\r\n\r\n");
+  sprintln();
+
 
 
 }
-
-
-/////////////Helper function
 
 void sprint() {
   Serial.print("");
