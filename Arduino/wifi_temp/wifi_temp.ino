@@ -21,7 +21,7 @@ float referenceVoltage;
 void setup() {
   Serial.begin(57600);
   sprintln("starting....");
-  analogReference(INTERNAL);
+
   referenceVoltage = 2.00; //Set to 5, 3.3, 2.56 or 1.1 depending on analogReference Setting
 
   pinMode(switchPin, INPUT);
