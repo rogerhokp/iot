@@ -2,5 +2,5 @@
 #define connectwifi_h
 #include <Arduino.h>
 
-String WifiConnect(char* ssid, char* password);
+String WifiConnect(const char* ssid, const char* password);
 #endif

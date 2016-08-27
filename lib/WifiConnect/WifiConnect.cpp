@@ -1,9 +1,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
-
-
-String WifiConnect(char* ssid, char* password) {
+String WifiConnect(const char *ssid, const char *password) {
   Serial.begin(115200);
   delay(10);
 
@@ -25,5 +23,5 @@ String WifiConnect(char* ssid, char* password) {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-  return String(WiFi.localIP());
+  return WiFi.localIP().toString();
 }
