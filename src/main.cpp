@@ -1,29 +1,41 @@
 #include "DHT.h"
 #include <Arduino.h>
 #include <ESP8266HTTPClient.h>
+#include <ESP8266HTTPClient.h>
 #include <LiquidCrystal.h>
 #include <WifiConnect.h>
 
 #define DHTPIN D7
 #define DHTTYPE DHT11
+#define FAN_PIN D8
 
 #define ssid "hihi"
 #define password "Sss99889988"
-// #include <ESP8266HTTPClient.h>
 
 LiquidCrystal lcd(D6, D5, D4, D3, D2, D1);
 DHT dht(DHTPIN, DHTTYPE);
 
 String ip;
+float temperatureOnLevel = 29;
 void setup() {
   Serial.begin(115200);
   // delay(1000);
   // Serial.flush();
   ip = WifiConnect(ssid, password);
-
+  pinMode(FAN_PIN, OUTPUT);
   lcd.begin(16, 2); // initialize the lcd
 
   dht.begin();
+}
+
+void postResult(float h, float t, float hic) {
+
+  HTTPClient http;
+  http.begin("http://iot-rogerhokp.rhcloud.com/temperature");
+  http.addHeader("Content-Type", "application/json; charset=utf-8");
+  http.POST("{\"humidity\": " + String(h) + ", \"temperature\":" + String(t) +
+            ",\"heat_index\":" + String(hic) + "}");
+  Serial.println("POST Result " + http.getString());
 }
 
 void loop() {
@@ -45,11 +57,21 @@ void loop() {
   lcd.print("HIC: ");
   lcd.print(hic);
 
+  postResult(h, t, hic);
+
+  if (hic >= temperatureOnLevel) {
+    digitalWrite(FAN_PIN, HIGH);
+    lcd.print("   ON ");
+  } else {
+    digitalWrite(FAN_PIN, LOW);
+    lcd.print("   OFF");
+  }
+
   // Serial.print("humidity");
   // Serial.println(temperature[0]);
   // Serial.print("temperature");
   // Serial.println(temperature[1]);
   // Serial.print("HeatIndex");
   // Serial.println(temperature[2]);
-  delay(5000);
+  delay(60000);
 }
