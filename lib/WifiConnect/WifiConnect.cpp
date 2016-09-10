@@ -13,6 +13,7 @@ String WifiConnect(const char *ssid, const char *password) {
   Serial.println(ssid);
 
   WiFi.begin(ssid, password);
+  WiFi.mode(WIFI_STA);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
