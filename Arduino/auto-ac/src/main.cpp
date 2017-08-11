@@ -47,24 +47,37 @@ void loop() {
   float h = dht.readHumidity();
   float t = dht.readTemperature();
   float hic = dht.computeHeatIndex(t, h, false);
+  lcd.clear();
 
-  lcd.home(); // go home
-  lcd.print("H:");
-  lcd.print(h);
-  lcd.print("/T:");
-  lcd.print(t);
-  lcd.setCursor(0, 1); // go to the next line
-  lcd.print("HIC: ");
-  lcd.print(hic);
 
-  postResult(h, t, hic);
 
-  if (hic >= temperatureOnLevel) {
-    digitalWrite(FAN_PIN, HIGH);
-    lcd.print("   ON ");
-  } else {
-    digitalWrite(FAN_PIN, LOW);
-    lcd.print("   OFF");
+
+
+  if(!isnan(hic)){
+
+    lcd.home(); // go home
+    lcd.print("H:");
+    lcd.print(h);
+    lcd.print("/T:");
+    lcd.print(t);
+    lcd.setCursor(0, 1); // go to the next line
+    lcd.print("HIC: ");
+    lcd.print(hic);
+
+    postResult(h, t, hic);
+    if (hic >= temperatureOnLevel) {
+      digitalWrite(FAN_PIN, HIGH);
+      lcd.print("   ON ");
+    } else {
+      digitalWrite(FAN_PIN, LOW);
+      lcd.print("   OFF");
+    }
+    delay(60000);
+
+  }else{
+    lcd.home(); // go home
+    lcd.print("Retrying");
+    delay(1000);
   }
 
   // Serial.print("humidity");
@@ -73,5 +86,5 @@ void loop() {
   // Serial.println(temperature[1]);
   // Serial.print("HeatIndex");
   // Serial.println(temperature[2]);
-  delay(60000);
+
 }
