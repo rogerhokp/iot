@@ -9,8 +9,9 @@
 #define DHTTYPE DHT11
 #define FAN_PIN D8
 
-#define ssid "hihi"
-#define password "Sss99889988"
+#define ssid ""  //WIFI SSID
+#define password ""  //WIFI Password
+#define storageEndpoint ""
 
 LiquidCrystal lcd(D6, D5, D4, D3, D2, D1);
 DHT dht(DHTPIN, DHTTYPE);
@@ -31,11 +32,12 @@ void setup() {
 void postResult(float h, float t, float hic) {
 
   HTTPClient http;
-  http.begin("http://iot-rogerhokp.rhcloud.com/temperature");
+  http.begin(storageEndpoint);
   http.addHeader("Content-Type", "application/json; charset=utf-8");
   http.POST("{\"humidity\": " + String(h) + ", \"temperature\":" + String(t) +
             ",\"heat_index\":" + String(hic) + "}");
   Serial.println("POST Result " + http.getString());
+
 }
 
 void loop() {

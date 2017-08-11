@@ -1,9 +1,3 @@
-//Arduino sketch created by Nikos Georgousis
-//Dec 2014
-//Based on http://rayshobby.net/?p=9592 example
-//Wireless temperature sensor with LM-35 and HlK-RM04
-
-
 #include <DHT.h>
 #define highLightPin 2
 #define normalLightPin 3
@@ -13,6 +7,7 @@
 #define tempSensorPower 7
 #define tempSensorPin 6
 #define DHTTYPE DHT11
+#define serverEndpoint "" //Server endpoint
 DHT dht(tempSensorPin, DHTTYPE);
 
 float analogVal;
@@ -50,7 +45,7 @@ void loop() {
   if (sendOn && count == sendInterval && Serial) {
     postToServer(
       "/temperature",
-      "iot-rogerhokp.rhcloud.com",
+      serverEndpoint,
       "{\"humidity\": " + String(h) + ", \"temperature\":" + String(t) + ", \"heat_index\":" + String(hi) + "}",
       "application/json; charset=utf-8"
     );
