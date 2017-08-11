@@ -139,18 +139,6 @@ void loop() {
 
 void postToServer(String path, String host, String data, String contentType) {
 
-
-  /*
-
-    POST /temperature HTTP/1.1
-    Host: iot-rogerhokp.rhcloud.com
-    Content-Type: application/json
-    Cache-Control: no-cache
-    Postman-Token: 1aee22bb-cb4d-f45d-39ed-92f96402db34
-
-    {"test": 222}
-
-  */
   sprintln("POST " + path + " HTTP/1.1");
   sprintln("Host: " + host);
   sprintln("Connection: close");
